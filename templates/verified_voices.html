@@ -1,0 +1,65 @@
+{% extends "app_shell.html" %}
+
+{% block page_content %}
+<div>
+    <div style="margin-bottom: 20px;">
+        <h1 style="font-size: var(--text-xl); font-family: var(--font-heading); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="book-open" style="width: 24px; height: 24px; color: var(--accent-purple);"></i>
+            <span class="lang-en">Verified Voices</span><span class="lang-hi" style="display:none">सत्यापित आवाज़ें</span>
+        </h1>
+        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: 4px;">
+            <span class="lang-en">Financial education and insights exclusively from SEBI-registered RIAs and RAs.</span>
+            <span class="lang-hi" style="display:none">वित्तीय शिक्षा और अंतर्दृष्टि विशेष रूप से SEBI-पंजीकृत RIA और RA से।</span>
+        </p>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="alert-card alert-card--info" style="margin-bottom: 16px;">
+        <div style="display: flex; align-items: flex-start; gap: 8px;">
+            <i data-lucide="badge-check" style="flex-shrink: 0; margin-top: 1px; color: var(--accent-teal); width: 16px; height: 16px;"></i>
+            <span>
+                <span class="lang-en">All content here is from <strong>SEBI-registered</strong> professionals. Look for the <span style="color: var(--accent-teal)">✓ verified badge</span>.</span>
+                <span class="lang-hi" style="display:none">यहां सभी सामग्री <strong>SEBI-पंजीकृत</strong> पेशेवरों से है। <span style="color: var(--accent-teal)">✓ सत्यापित बैज</span> खोजें।</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Content Cards -->
+    <div class="stagger-children" style="display: flex; flex-direction: column; gap: 12px;">
+        {% for article in content %}
+        <div class="content-card">
+            <div class="content-card__header">
+                <span class="content-card__category">{{ article.category }}</span>
+            </div>
+            
+            <h3 class="content-card__title">
+                <span class="lang-en">{{ article.title }}</span>
+                <span class="lang-hi" style="display:none">{{ article.title_hi }}</span>
+            </h3>
+            
+            <p class="content-card__summary">
+                <span class="lang-en">{{ article.summary }}</span>
+                <span class="lang-hi" style="display:none">{{ article.summary_hi }}</span>
+            </p>
+            
+            <div class="content-card__footer">
+                <div class="content-card__author">
+                    <div class="content-card__author-avatar">{{ article.author[:2] | upper }}</div>
+                    <div>
+                        <div class="content-card__author-name">{{ article.author }}</div>
+                        <span class="badge badge--verified" style="font-size: 10px;">
+                            <i data-lucide="badge-check" style="width: 11px; height: 11px;"></i>
+                            SEBI {{ article.author_type }} · {{ article.author_reg_number }}
+                        </span>
+                    </div>
+                </div>
+                <div class="content-card__meta">
+                    <i data-lucide="clock" style="width: 11px; height: 11px; display: inline; vertical-align: middle; margin-right: 3px;"></i>
+                    {{ article.read_time_min }} min
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-container animate-fade-in">
+        <!-- Logo -->
+        <div class="login-logo animate-float">MV</div>
+        <h1 class="login-title">Verify Email</h1>
+        <p class="login-subtitle">We sent a 6-digit code to {{ session.get('signup_data', {}).get('email', 'your email') }}</p>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div style="width: 100%; margin-bottom: var(--space-md);">
+            {% for category, message in messages %}
+            <div class="alert-card alert-card--{{ 'danger' if category == 'error' else 'success' }}">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>{% if category == 'error' %}⚠️{% else %}✅{% endif %}</span>
+                    <span>{{ message }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- OTP Form -->
+        <form method="POST" action="{{ url_for('verify_otp') }}" class="login-form">
+            <div class="form-field">
+                <label class="form-field__label" for="otp">Enter 6-Digit Code</label>
+                <div class="input-group">
+                    <i data-lucide="key" class="input-group__icon" style="width: 16px; height: 16px;"></i>
+                    <input type="text" id="otp" name="otp" class="input input--with-icon" placeholder="123456" maxlength="6" pattern="\d{6}" required autocomplete="off" style="letter-spacing: 4px; font-weight: bold; text-align: center;">
+                </div>
+                <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">Check your terminal/console for the OTP code.</div>
+            </div>
+
+            <button type="submit" class="btn btn--primary login-submit">
+                Verify & Create Account
+                <i data-lucide="arrow-right" style="width: 18px; height: 18px; margin-left: 8px;"></i>
+            </button>
+        </form>
+
+        <a href="{{ url_for('login') }}" class="btn btn--ghost" style="margin-top: var(--space-md); width: 100%;">
+            Cancel Signup
+        </a>
+    </div>
+</div>
+{% endblock %}

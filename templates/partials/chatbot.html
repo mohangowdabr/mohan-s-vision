@@ -1,0 +1,58 @@
+<!-- Any Help Chatbot Widget -->
+<div id="chatbotWidget" class="chatbot-widget">
+    <!-- FAB Button -->
+    <button id="chatbotFab" class="chatbot-fab" title="Any Help?">
+        <span class="chatbot-fab__icon" id="fabIcon">
+            <i data-lucide="message-circle" style="width: 24px; height: 24px;"></i>
+        </span>
+        <span class="chatbot-fab__close" id="fabClose" style="display: none;">
+            <i data-lucide="x" style="width: 24px; height: 24px;"></i>
+        </span>
+        <span class="chatbot-fab__pulse"></span>
+    </button>
+
+    <!-- Chat Panel -->
+    <div id="chatbotPanel" class="chatbot-panel">
+        <!-- Chat Header -->
+        <div class="chatbot-panel__header">
+            <div class="chatbot-panel__header-info">
+                <div class="chatbot-panel__avatar">
+                    <i data-lucide="bot" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div>
+                    <div class="chatbot-panel__name">Any Help</div>
+                    <div class="chatbot-panel__status">
+                        <span class="chatbot-panel__dot"></span>
+                        Online
+                    </div>
+                </div>
+            </div>
+            <button id="chatbotClose" class="chatbot-panel__close" title="Close chat">
+                <i data-lucide="chevron-down" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chatMessages" class="chatbot-panel__messages">
+            <!-- Welcome message added by JS -->
+        </div>
+
+        <!-- Quick Replies -->
+        <div id="quickReplies" class="chatbot-panel__quick-replies">
+            <button class="quick-reply-chip" data-query="What is my health score?">Health Score</button>
+            <button class="quick-reply-chip" data-query="How to connect accounts?">Connect Accounts</button>
+            <button class="quick-reply-chip" data-query="What is SIP?">What is SIP?</button>
+            <button class="quick-reply-chip" data-query="What are mutual funds?">Mutual Funds</button>
+            <button class="quick-reply-chip" data-query="How is risk calculated?">Risk Score</button>
+            <button class="quick-reply-chip" data-query="Contact support">Support</button>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chatbot-panel__input-area">
+            <input type="text" id="chatInput" class="chatbot-panel__input" placeholder="Ask me anything..." autocomplete="off">
+            <button id="chatSendBtn" class="chatbot-panel__send" title="Send">
+                <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+            </button>
+        </div>
+    </div>
+</div>

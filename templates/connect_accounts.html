@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="connect-page">
+    <div class="connect-container animate-fade-in">
+        <!-- Header -->
+        <div class="connect-header">
+            <a href="{{ url_for('dashboard') }}" class="connect-back">
+                <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+            </a>
+            <div>
+                <h1 class="connect-title">Connect Accounts</h1>
+                <p class="connect-subtitle">Link your financial accounts securely</p>
+            </div>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step-indicator__item step-indicator__item--active" data-step="1">
+                <div class="step-indicator__dot">1</div>
+                <span class="step-indicator__label">Demat</span>
+            </div>
+            <div class="step-indicator__line"></div>
+            <div class="step-indicator__item" data-step="2">
+                <div class="step-indicator__dot">2</div>
+                <span class="step-indicator__label">Bank</span>
+            </div>
+            <div class="step-indicator__line"></div>
+            <div class="step-indicator__item" data-step="3">
+                <div class="step-indicator__dot">3</div>
+                <span class="step-indicator__label">MF</span>
+            </div>
+            <div class="step-indicator__line"></div>
+            <div class="step-indicator__item" data-step="4">
+                <div class="step-indicator__dot">4</div>
+                <span class="step-indicator__label">NPS</span>
+            </div>
+            <div class="step-indicator__line"></div>
+            <div class="step-indicator__item" data-step="5">
+                <div class="step-indicator__dot">✓</div>
+                <span class="step-indicator__label">Done</span>
+            </div>
+        </div>
+
+        <!-- Step 1: Demat Account -->
+        <div class="wizard-step wizard-step--active" id="wizardStep1">
+            <div class="wizard-step__header">
+                <div class="wizard-step__icon">📊</div>
+                <h2 class="wizard-step__title">Demat Account</h2>
+                <p class="wizard-step__desc">Link your CDSL or NSDL demat account</p>
+            </div>
+
+            <div class="wizard-step__body">
+                <div class="form-field">
+                    <label class="form-field__label">Depository</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="depository" value="CDSL" checked>
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">CDSL</span>
+                                <span class="radio-option__desc">Central Depository</span>
+                            </span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="depository" value="NSDL">
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">NSDL</span>
+                                <span class="radio-option__desc">National Depository</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="dpId">DP ID</label>
+                    <input type="text" id="dpId" class="input" placeholder="e.g., IN301549" maxlength="16">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="clientId">Client ID / BO ID</label>
+                    <input type="text" id="clientId" class="input" placeholder="e.g., 1234567890" maxlength="16">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="broker">Broker Name</label>
+                    <select id="broker" class="input">
+                        <option value="">Select your broker</option>
+                        <option value="zerodha">Zerodha</option>
+                        <option value="groww">Groww</option>
+                        <option value="upstox">Upstox</option>
+                        <option value="angelone">Angel One</option>
+                        <option value="icici_direct">ICICI Direct</option>
+                        <option value="hdfc_securities">HDFC Securities</option>
+                        <option value="kotak_securities">Kotak Securities</option>
+                        <option value="sbi_securities">SBI Securities</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="wizard-step__actions">
+                <button class="btn btn--ghost" onclick="skipStep(2)">Skip</button>
+                <button class="btn btn--primary" onclick="saveAndNext(1, 'demat')">
+                    Save & Continue
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Bank Account -->
+        <div class="wizard-step" id="wizardStep2">
+            <div class="wizard-step__header">
+                <div class="wizard-step__icon">🏦</div>
+                <h2 class="wizard-step__title">Bank Account</h2>
+                <p class="wizard-step__desc">Link your savings or current account</p>
+            </div>
+
+            <div class="wizard-step__body">
+                <div class="form-field">
+                    <label class="form-field__label" for="bankName">Bank Name</label>
+                    <select id="bankName" class="input">
+                        <option value="">Select your bank</option>
+                        <option value="sbi">State Bank of India</option>
+                        <option value="hdfc">HDFC Bank</option>
+                        <option value="icici">ICICI Bank</option>
+                        <option value="axis">Axis Bank</option>
+                        <option value="kotak">Kotak Mahindra Bank</option>
+                        <option value="pnb">Punjab National Bank</option>
+                        <option value="bob">Bank of Baroda</option>
+                        <option value="canara">Canara Bank</option>
+                        <option value="union">Union Bank</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="accountNumber">Account Number</label>
+                    <input type="text" id="accountNumber" class="input" placeholder="e.g., 50100123456789" maxlength="18">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="ifsc">IFSC Code</label>
+                    <input type="text" id="ifsc" class="input" placeholder="e.g., SBIN0001234" maxlength="11" style="text-transform: uppercase;">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label">Account Type</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="accountType" value="savings" checked>
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">Savings</span>
+                            </span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="accountType" value="current">
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">Current</span>
+                            </span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="accountType" value="fd">
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">FD / RD</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step__actions">
+                <button class="btn btn--ghost" onclick="skipStep(3)">Skip</button>
+                <button class="btn btn--primary" onclick="saveAndNext(2, 'bank')">
+                    Save & Continue
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Mutual Funds -->
+        <div class="wizard-step" id="wizardStep3">
+            <div class="wizard-step__header">
+                <div class="wizard-step__icon">📈</div>
+                <h2 class="wizard-step__title">Mutual Funds</h2>
+                <p class="wizard-step__desc">Link via CAMS or KFintech</p>
+            </div>
+
+            <div class="wizard-step__body">
+                <div class="form-field">
+                    <label class="form-field__label">Registrar</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="mfRegistrar" value="CAMS" checked>
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">CAMS</span>
+                                <span class="radio-option__desc">Computer Age Mgmt</span>
+                            </span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="mfRegistrar" value="KFintech">
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">KFintech</span>
+                                <span class="radio-option__desc">Karvy Fintech</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="folioNumber">Folio Number (Optional)</label>
+                    <input type="text" id="folioNumber" class="input" placeholder="e.g., 1234567890/12">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="mfAmc">AMC (Fund House)</label>
+                    <select id="mfAmc" class="input">
+                        <option value="">Select AMC (optional)</option>
+                        <option value="sbi_mf">SBI Mutual Fund</option>
+                        <option value="hdfc_mf">HDFC Mutual Fund</option>
+                        <option value="icici_pru">ICICI Prudential MF</option>
+                        <option value="axis_mf">Axis Mutual Fund</option>
+                        <option value="uti_mf">UTI Mutual Fund</option>
+                        <option value="nippon">Nippon India MF</option>
+                        <option value="kotak_mf">Kotak Mutual Fund</option>
+                        <option value="dsp">DSP Mutual Fund</option>
+                        <option value="all">All AMCs (PAN-based lookup)</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="mfPan">PAN for Lookup</label>
+                    <input type="text" id="mfPan" class="input" placeholder="ABCPM1234F" maxlength="10" style="text-transform: uppercase;">
+                    <p style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 4px;">
+                        Your PAN is used to auto-fetch all linked mutual fund folios
+                    </p>
+                </div>
+            </div>
+
+            <div class="wizard-step__actions">
+                <button class="btn btn--ghost" onclick="skipStep(4)">Skip</button>
+                <button class="btn btn--primary" onclick="saveAndNext(3, 'mutual_funds')">
+                    Save & Continue
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 4: NPS -->
+        <div class="wizard-step" id="wizardStep4">
+            <div class="wizard-step__header">
+                <div class="wizard-step__icon">🏛️</div>
+                <h2 class="wizard-step__title">National Pension System</h2>
+                <p class="wizard-step__desc">Link your NPS account via CRA</p>
+            </div>
+
+            <div class="wizard-step__body">
+                <div class="form-field">
+                    <label class="form-field__label" for="pranNumber">PRAN Number</label>
+                    <input type="text" id="pranNumber" class="input" placeholder="e.g., 110012345678" maxlength="12">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label" for="pfm">Pension Fund Manager</label>
+                    <select id="pfm" class="input">
+                        <option value="">Select PFM</option>
+                        <option value="sbi_pension">SBI Pension Funds</option>
+                        <option value="lic_pension">LIC Pension Fund</option>
+                        <option value="uti_pension">UTI Retirement Solutions</option>
+                        <option value="hdfc_pension">HDFC Pension Mgmt</option>
+                        <option value="icici_pension">ICICI Prudential Pension</option>
+                        <option value="kotak_pension">Kotak Pension Fund</option>
+                        <option value="aditya_pension">Aditya Birla Sun Life Pension</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-field__label">Account Tier</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="npsTier" value="tier1" checked>
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">Tier I</span>
+                                <span class="radio-option__desc">Retirement (Locked)</span>
+                            </span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="npsTier" value="tier2">
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">Tier II</span>
+                                <span class="radio-option__desc">Flexible Withdrawal</span>
+                            </span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="npsTier" value="both">
+                            <span class="radio-option__box">
+                                <span class="radio-option__title">Both</span>
+                                <span class="radio-option__desc">Tier I + II</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step__actions">
+                <button class="btn btn--ghost" onclick="skipStep(5)">Skip</button>
+                <button class="btn btn--primary" onclick="saveAndNext(4, 'nps')">
+                    Save & Finish
+                    <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 5: Confirmation -->
+        <div class="wizard-step" id="wizardStep5">
+            <div class="wizard-step__header" style="padding-bottom: 0;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--color-success-dim); display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <i data-lucide="check-circle" style="width: 40px; height: 40px; color: var(--color-success);"></i>
+                </div>
+                <h2 class="wizard-step__title">All Set!</h2>
+                <p class="wizard-step__desc">Your accounts have been submitted for linking</p>
+            </div>
+
+            <div class="wizard-step__body">
+                <div id="linkedSummary" class="linked-summary">
+                    <!-- Filled dynamically -->
+                </div>
+
+                <div class="card" style="margin-top: 16px; background: var(--accent-teal-dim); border-color: rgba(0, 212, 170, 0.2);">
+                    <div style="display: flex; align-items: flex-start; gap: 10px; font-size: var(--text-sm);">
+                        <i data-lucide="shield-check" style="width: 18px; height: 18px; color: var(--accent-teal); flex-shrink: 0; margin-top: 2px;"></i>
+                        <span style="color: var(--text-secondary);">
+                            Your data is encrypted and transmitted securely via the Account Aggregator framework. We never store your login credentials.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step__actions" style="justify-content: center;">
+                <a href="{{ url_for('dashboard') }}" class="btn btn--primary btn--full">
+                    Go to Dashboard
+                    <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentStep = 1;
+    const linkedAccounts = [];
+
+    function goToStep(step) {
+        // Hide all steps
+        for (let i = 1; i <= 5; i++) {
+            const el = document.getElementById('wizardStep' + i);
+            if (el) {
+                el.classList.remove('wizard-step--active');
+            }
+        }
+
+        // Show target step
+        const target = document.getElementById('wizardStep' + step);
+        if (target) {
+            target.classList.add('wizard-step--active');
+        }
+
+        // Update indicator
+        document.querySelectorAll('.step-indicator__item').forEach(item => {
+            const s = parseInt(item.dataset.step);
+            item.classList.remove('step-indicator__item--active', 'step-indicator__item--done');
+            if (s < step) item.classList.add('step-indicator__item--done');
+            if (s === step) item.classList.add('step-indicator__item--active');
+        });
+
+        currentStep = step;
+
+        // If step 5, render summary
+        if (step === 5) renderSummary();
+
+        // Re-init icons
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function skipStep(nextStep) {
+        goToStep(nextStep);
+    }
+
+    function getStepData(step) {
+        switch(step) {
+            case 1:
+                return {
+                    depository: document.querySelector('input[name="depository"]:checked')?.value || '',
+                    dp_id: document.getElementById('dpId')?.value || '',
+                    client_id: document.getElementById('clientId')?.value || '',
+                    broker: document.getElementById('broker')?.value || ''
+                };
+            case 2:
+                return {
+                    bank_name: document.getElementById('bankName')?.value || '',
+                    account_number: document.getElementById('accountNumber')?.value || '',
+                    ifsc: document.getElementById('ifsc')?.value || '',
+                    account_type: document.querySelector('input[name="accountType"]:checked')?.value || ''
+                };
+            case 3:
+                return {
+                    registrar: document.querySelector('input[name="mfRegistrar"]:checked')?.value || '',
+                    folio_number: document.getElementById('folioNumber')?.value || '',
+                    amc: document.getElementById('mfAmc')?.value || '',
+                    pan: document.getElementById('mfPan')?.value || ''
+                };
+            case 4:
+                return {
+                    pran: document.getElementById('pranNumber')?.value || '',
+                    pfm: document.getElementById('pfm')?.value || '',
+                    tier: document.querySelector('input[name="npsTier"]:checked')?.value || ''
+                };
+        }
+        return {};
+    }
+
+    function saveAndNext(step, accountType) {
+        const data = getStepData(step);
+        const nextStep = step + 1;
+
+        // Save via AJAX
+        fetch('/api/link-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account_type: accountType, details: data })
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                linkedAccounts.push({ type: accountType, data: data });
+            }
+            goToStep(nextStep);
+        })
+        .catch(() => {
+            // Still proceed even if save fails
+            linkedAccounts.push({ type: accountType, data: data });
+            goToStep(nextStep);
+        });
+    }
+
+    function renderSummary() {
+        const container = document.getElementById('linkedSummary');
+        if (!container) return;
+
+        const typeLabels = {
+            demat: { label: 'Demat Account', icon: '📊' },
+            bank: { label: 'Bank Account', icon: '🏦' },
+            mutual_funds: { label: 'Mutual Funds', icon: '📈' },
+            nps: { label: 'NPS Account', icon: '🏛️' }
+        };
+
+        if (linkedAccounts.length === 0) {
+            container.innerHTML = `
+                <div class="card" style="text-align: center; padding: 24px;">
+                    <p style="color: var(--text-secondary); font-size: var(--text-sm);">
+                        No accounts were linked. You can connect them later from settings.
+                    </p>
+                </div>`;
+            return;
+        }
+
+        let html = '';
+        linkedAccounts.forEach(acc => {
+            const info = typeLabels[acc.type] || { label: acc.type, icon: '📋' };
+            html += `
+                <div class="card" style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">${info.icon}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: var(--text-base);">${info.label}</div>
+                        <div style="font-size: var(--text-xs); color: var(--text-secondary);">Connected</div>
+                    </div>
+                    <span class="badge badge--success">Linked</span>
+                </div>`;
+        });
+
+        container.innerHTML = html;
+    }
+</script>
+{% endblock %}

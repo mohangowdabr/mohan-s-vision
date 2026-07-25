@@ -1,0 +1,9 @@
+# Financial goals with progress tracking
+
+financial_goals = [
+    {"id": "GOAL-001", "name": "Retirement Fund", "name_hi": "रिटायरमेंट फंड", "icon": "🏖️", "target_amount": 5000000, "current_amount": 1850000, "target_date": "2048-12-31", "start_date": "2020-01-15", "monthly_sip": 12500, "linked_investments": ["NPS Tier 1", "Nifty 50 Index Fund", "HDFC Mid-Cap Fund"], "priority": "High", "category": "retirement", "expected_return_rate": 12},
+    {"id": "GOAL-002", "name": "Child's Education", "name_hi": "बच्चे की शिक्षा", "icon": "🎓", "target_amount": 3000000, "current_amount": 680000, "target_date": "2040-06-30", "start_date": "2022-04-01", "monthly_sip": 8000, "linked_investments": ["Axis ELSS Fund", "SBI Balanced Advantage", "Government Securities"], "priority": "High", "category": "education", "expected_return_rate": 11},
+    {"id": "GOAL-003", "name": "Emergency Fund", "name_hi": "इमरजेंसी फंड", "icon": "🛡️", "target_amount": 600000, "current_amount": 475000, "target_date": "2026-12-31", "start_date": "2024-01-01", "monthly_sip": 10000, "linked_investments": ["ICICI Pru Short Term Fund", "Savings Account"], "priority": "Critical", "category": "emergency", "expected_return_rate": 7},
+    {"id": "GOAL-004", "name": "House Down Payment", "name_hi": "घर की डाउन पेमेंट", "icon": "🏠", "target_amount": 2500000, "current_amount": 520000, "target_date": "2030-03-31", "start_date": "2023-06-01", "monthly_sip": 15000, "linked_investments": ["Digital Gold", "HDFC Bank FD", "SBI Balanced Advantage"], "priority": "Medium", "category": "housing", "expected_return_rate": 10},
+    {"id": "GOAL-005", "name": "Dream Vacation", "name_hi": "सपनों की छुट्टी", "icon": "✈️", "target_amount": 400000, "current_amount": 185000, "target_date": "2027-12-31", "start_date": "2025-01-01", "monthly_sip": 8000, "linked_investments": ["Liquid Fund", "Short Duration Fund"], "priority": "Low", "category": "lifestyle", "expected_return_rate": 8},
+]

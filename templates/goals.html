@@ -1,0 +1,121 @@
+{% extends "app_shell.html" %}
+
+{% block page_content %}
+<div>
+    <div style="margin-bottom: 20px;">
+        <h1 style="font-size: var(--text-xl); font-family: var(--font-heading); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="target" style="width: 24px; height: 24px; color: var(--accent-teal);"></i>
+            <span class="lang-en">Financial Goals</span><span class="lang-hi" style="display:none">वित्तीय लक्ष्य</span>
+        </h1>
+    </div>
+
+    <!-- Overall Summary -->
+    <div class="card card--glass" style="margin-bottom: 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="position: relative; width: 64px; height: 64px; flex-shrink: 0;">
+            <svg width="64" height="64" style="transform: rotate(-90deg);">
+                <circle cx="32" cy="32" r="28" fill="none" stroke="var(--border-subtle)" stroke-width="5" />
+                <circle cx="32" cy="32" r="28" fill="none" stroke="var(--accent-teal)" stroke-width="5" stroke-linecap="round"
+                        stroke-dasharray="175.9" stroke-dashoffset="{{ 175.9 - (overall_pct / 100 * 175.9) }}"
+                        style="filter: drop-shadow(0 0 4px var(--accent-teal)40);" />
+            </svg>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 13px; font-weight: 700; color: var(--accent-teal);">
+                {{ overall_pct | round | int }}%
+            </div>
+        </div>
+        
+        <div>
+            <div style="font-size: var(--text-sm); color: var(--text-secondary);">
+                <span class="lang-en">Overall Progress</span><span class="lang-hi" style="display:none">कुल प्रगति</span>
+            </div>
+            <div style="font-size: var(--text-lg); font-weight: 700; font-family: var(--font-heading);">
+                {{ format_inr(total_current) }} <span style="color: var(--text-tertiary); font-size: var(--text-sm); font-weight: 400;">/ {{ format_inr(total_target) }}</span>
+            </div>
+            <div style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: 4px;">
+                <span style="color: var(--color-success);">{{ on_track_count }}</span> 
+                <span class="lang-en">of {{ goals|length }} goals on track</span><span class="lang-hi" style="display:none">{{ goals|length }} में से लक्ष्य पटरी पर</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goal Cards -->
+    <div class="stagger-children" style="display: flex; flex-direction: column; gap: 12px;">
+        {% for goal in goals %}
+        {% set status_color = "var(--color-success)" if goal.on_track else "var(--color-warning)" %}
+        
+        <div class="goal-card">
+            <div class="goal-card__header">
+                <span class="goal-card__icon">{{ goal.icon }}</span>
+                <div style="flex: 1;">
+                    <div class="goal-card__title">
+                        <span class="lang-en">{{ goal.name }}</span>
+                        <span class="lang-hi" style="display:none">{{ goal.name_hi }}</span>
+                    </div>
+                    <div style="font-size: var(--text-xs); color: var(--text-tertiary);">
+                        <span class="lang-en">{{ goal.remaining_months }} months to target</span>
+                        <span class="lang-hi" style="display:none">लक्ष्य में {{ goal.remaining_months }} महीने बाकी</span>
+                    </div>
+                </div>
+                
+                <div style="position: relative; width: 52px; height: 52px; flex-shrink: 0;">
+                    <svg width="52" height="52" style="transform: rotate(-90deg);">
+                        <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border-subtle)" stroke-width="5" />
+                        <circle cx="26" cy="26" r="22" fill="none" stroke="{{ status_color }}" stroke-width="5" stroke-linecap="round"
+                                stroke-dasharray="138.2" stroke-dashoffset="{{ 138.2 - ([goal.funded_pct, 100]|min / 100 * 138.2) }}" />
+                    </svg>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; font-weight: 700; color: {{ status_color }};">
+                        {{ goal.funded_pct | round | int }}%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar {% if not goal.on_track %}progress-bar--warning{% endif %}" style="margin-bottom: 12px;">
+                <div class="progress-bar__fill" style="width: {{ [goal.funded_pct, 100]|min }}%;"></div>
+            </div>
+
+            <div class="goal-card__amounts">
+                <span><span class="lang-en">Current</span><span class="lang-hi" style="display:none">वर्तमान</span></span>
+                <span>{{ format_inr(goal.current_amount) }}</span>
+            </div>
+            <div class="goal-card__amounts">
+                <span><span class="lang-en">Target</span><span class="lang-hi" style="display:none">लक्ष्य</span></span>
+                <span>{{ format_inr(goal.target_amount) }}</span>
+            </div>
+            <div class="goal-card__amounts">
+                <span><span class="lang-en">Monthly SIP</span><span class="lang-hi" style="display:none">मासिक SIP</span></span>
+                <span>₹{{ "{:,.0f}".format(goal.monthly_sip) }}/mo</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+                {% if goal.on_track %}
+                <span class="badge badge--success">
+                    <i data-lucide="check-circle" style="width: 11px; height: 11px;"></i> On Track
+                </span>
+                {% else %}
+                <span class="badge badge--warning">
+                    <i data-lucide="alert-triangle" style="width: 11px; height: 11px;"></i> At Risk
+                </span>
+                {% endif %}
+                <span style="font-size: var(--text-xs); color: var(--text-tertiary);">
+                    Projected: {{ format_inr(goal.projected_value) }}
+                </span>
+            </div>
+
+            {% if goal.nudge and goal.nudge.type != 'on_track' and goal.nudge.type != 'success' %}
+            <div class="goal-card__nudge">
+                <span class="lang-en">{{ goal.nudge.message }}</span>
+                <span class="lang-hi" style="display:none">{{ goal.nudge.message_hi }}</span>
+                
+                {% if goal.nudge.action %}
+                <button class="btn btn--ghost btn--sm" style="margin-top: 8px; padding: 4px 8px;">
+                    {{ goal.nudge.action }} <i data-lucide="arrow-up-right" style="width: 12px; height: 12px;"></i>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

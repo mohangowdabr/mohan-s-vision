@@ -1,0 +1,177 @@
+{% extends "app_shell.html" %}
+
+{% block page_content %}
+<div class="stagger-children" style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- Greeting -->
+    <div>
+        <h1 style="font-size: var(--text-xl); font-family: var(--font-heading); font-weight: 700;">
+            <span class="lang-en">Good {{ tod_en }}, {{ display_name }}</span>
+            <span class="lang-hi" style="display:none">शुभ {{ tod_hi }}, {{ display_name }}</span>
+        </h1>
+        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: 2px;">
+            <span class="lang-en">Powered by Account Aggregator</span>
+            <span class="lang-hi" style="display:none">अकाउंट एग्रीगेटर द्वारा संचालित</span>
+        </p>
+    </div>
+
+    <!-- Net Worth -->
+    <div class="net-worth-card">
+        <div class="net-worth-card__label">
+            <span class="lang-en">Net Worth</span><span class="lang-hi" style="display:none">कुल संपत्ति</span>
+        </div>
+        <div class="net-worth-card__value">{{ format_inr(health.holdings.total_current) }}</div>
+        <div class="net-worth-card__change {% if health.holdings.total_gain >= 0 %}net-worth-card__change--positive{% else %}net-worth-card__change--negative{% endif %}">
+            {% if health.holdings.total_gain >= 0 %}
+                <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>+
+            {% else %}
+                <i data-lucide="trending-down" style="width: 14px; height: 14px;"></i>-
+            {% endif %}
+            {{ format_inr(health.holdings.total_gain | abs) }} ({{ "%.1f" | format(health.holdings.total_gain_pct) }}%)
+        </div>
+    </div>
+
+    <!-- Health Score Ring -->
+    <a href="{{ url_for('health_score') }}" class="card card--glass card--accent" style="text-decoration: none;">
+        <div class="flex-between mb-md">
+            <span style="font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">
+                <span class="lang-en">Financial Health Score</span>
+                <span class="lang-hi" style="display:none">वित्तीय स्वास्थ्य स्कोर</span>
+            </span>
+            <i data-lucide="chevron-right" style="width: 16px; height: 16px; color: var(--text-tertiary);"></i>
+        </div>
+        <div class="score-ring-container">
+            <div class="score-ring" style="width: 160px; height: 160px;">
+                <svg class="score-ring__svg" viewBox="0 0 160 160">
+                    <circle class="score-ring__bg" cx="80" cy="80" r="70"></circle>
+                    <!-- Dasharray: 2*pi*70 = 439.8 -->
+                    <circle id="scoreRingProgress" class="score-ring__progress" cx="80" cy="80" r="70" 
+                            style="stroke: {{ health.band_color }}; stroke-dasharray: 439.8; color: {{ health.band_color }};" 
+                            data-score="{{ health.score }}"></circle>
+                </svg>
+                <div class="score-ring__value">
+                    <div class="score-ring__number" id="scoreRingValue" style="color: {{ health.band_color }}">0</div>
+                    <div class="score-ring__label">of 900</div>
+                </div>
+            </div>
+            <div class="score-ring__band" style="background: {{ health.band_color }}18; color: {{ health.band_color }}">
+                {{ health.band }}
+            </div>
+        </div>
+    </a>
+
+    <!-- Quick Alerts -->
+    <div>
+        <div class="section-header">
+            <h2 class="section-header__title">
+                <span class="lang-en">Quick Alerts</span><span class="lang-hi" style="display:none">त्वरित अलर्ट</span>
+            </h2>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            {% set ns = namespace(alert_count=0) %}
+            
+            {% if health.signals.concentration.score < 75 %}
+                {% for flag in health.signals.concentration.flags[:2] %}
+                <a href="{{ url_for('health_score') }}" class="alert-card alert-card--warning" style="text-decoration: none;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="margin-top: 2px; flex-shrink: 0;"><i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i></span>
+                        <span>{{ flag }}</span>
+                    </div>
+                </a>
+                {% set ns.alert_count = ns.alert_count + 1 %}
+                {% endfor %}
+            {% endif %}
+            
+            {% if health.signals.advisor_trust.score < 75 %}
+                {% for adv in health.signals.advisor_trust.details if adv.status == 'Unverified' %}
+                {% if ns.alert_count < 4 %}
+                <a href="{{ url_for('fraud_shield') }}" class="alert-card alert-card--danger" style="text-decoration: none;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="margin-top: 2px; flex-shrink: 0;"><i data-lucide="user-x" style="width: 16px; height: 16px;"></i></span>
+                        <span>{{ adv.name }} ({{ adv.type }}) is not SEBI-registered</span>
+                    </div>
+                </a>
+                {% set ns.alert_count = ns.alert_count + 1 %}
+                {% endif %}
+                {% endfor %}
+            {% endif %}
+            
+            {% for goal in goals if (goal.nudge.type == 'increase_sip' or goal.nudge.type == 'at_risk') and ns.alert_count < 4 %}
+                <a href="{{ url_for('goals') }}" class="alert-card alert-card--{% if goal.nudge.type == 'at_risk' %}danger{% else %}info{% endif %}" style="text-decoration: none;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="margin-top: 2px; flex-shrink: 0;"><i data-lucide="target" style="width: 16px; height: 16px;"></i></span>
+                        <span>
+                            <span class="lang-en">{{ goal.nudge.message }}</span>
+                            <span class="lang-hi" style="display:none">{{ goal.nudge.message_hi }}</span>
+                        </span>
+                    </div>
+                </a>
+                {% set ns.alert_count = ns.alert_count + 1 %}
+            {% endfor %}
+            
+            {% if ns.alert_count == 0 %}
+                <div class="alert-card alert-card--success">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="margin-top: 2px; flex-shrink: 0;"><i data-lucide="trending-down" style="width: 16px; height: 16px;"></i></span>
+                        <span>✨ Portfolio looking healthy! No critical alerts.</span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Asset Allocation -->
+    <div>
+        <div class="section-header">
+            <h2 class="section-header__title">
+                <span class="lang-en">Asset Allocation</span><span class="lang-hi" style="display:none">परिसंपत्ति आवंटन</span>
+            </h2>
+            <a href="{{ url_for('portfolio') }}" class="section-header__action">
+                <span class="lang-en">View Details →</span><span class="lang-hi" style="display:none">विवरण देखें →</span>
+            </a>
+        </div>
+        <div class="card">
+            <div style="width: 100%; height: 180px; position: relative;">
+                <canvas id="allocationChart"></canvas>
+            </div>
+            
+            {% set colors = ['#00d4aa', '#4e7bff', '#f0c000', '#ff8c00', '#8b5cf6', '#ff3b5c'] %}
+            {% set labels = {'equities': 'Equities', 'mutual_funds': 'Mutual Funds', 'bonds': 'Bonds', 'gold': 'Gold', 'nps': 'NPS', 'reits_invits': 'REITs/InvITs'} %}
+            
+            <!-- Hide JSON data for Chart.js -->
+            <script type="application/json" id="allocationData">
+                {
+                    "labels": [{% for k, v in health.holdings.by_class.items() %}"{{ labels[k] }}"{% if not loop.last %},{% endif %}{% endfor %}],
+                    "values": [{% for k, v in health.holdings.by_class.items() %}{{ v.current }}{% if not loop.last %},{% endif %}{% endfor %}],
+                    "colors": [{% for i in range(colors|length) %}"{{ colors[i] }}"{% if not loop.last %},{% endif %}{% endfor %}]
+                }
+            </script>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px;">
+                {% for k, v in health.holdings.by_class.items() %}
+                <div style="display: flex; align-items: center; gap: 6px; font-size: var(--text-xs);">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ colors[loop.index0] }}; flex-shrink: 0;"></span>
+                    <span style="color: var(--text-secondary);">{{ labels[k] }}</span>
+                    <span style="font-weight: 600;">{{ "%.1f" | format(v.pct) }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Verified Voices CTA -->
+    <a href="{{ url_for('verified_voices') }}" class="card" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+        <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--accent-purple-dim); display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="book-open" style="width: 20px; height: 20px; color: var(--accent-purple);"></i>
+        </div>
+        <div style="flex: 1;">
+            <div style="font-weight: 600; font-size: var(--text-base); color: var(--text-primary);">
+                <span class="lang-en">Verified Voices</span><span class="lang-hi" style="display:none">सत्यापित आवाज़ें</span>
+            </div>
+            <div style="font-size: var(--text-xs); color: var(--text-secondary);">
+                <span class="lang-en">Learn from SEBI-registered experts</span><span class="lang-hi" style="display:none">SEBI-पंजीकृत विशेषज्ञों से सीखें</span>
+            </div>
+        </div>
+        <i data-lucide="chevron-right" style="width: 16px; height: 16px; color: var(--text-tertiary);"></i>
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "app_shell.html" %}
+
+{% block page_content %}
+<div>
+    <h1 style="font-size: var(--text-xl); font-family: var(--font-heading); font-weight: 700; margin-bottom: 4px;">
+        <span class="lang-en">Portfolio</span><span class="lang-hi" style="display:none">पोर्टफोलियो</span>
+    </h1>
+    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: 16px;">
+        <span class="lang-en">Invested: {{ format_inr(holdings.total_invested) }} → Current: {{ format_inr(holdings.total_current) }}</span>
+        <span class="lang-hi" style="display:none">निवेश: {{ format_inr(holdings.total_invested) }} → वर्तमान: {{ format_inr(holdings.total_current) }}</span>
+    </p>
+
+    <!-- Tabs -->
+    <div class="tabs" style="margin-bottom: 16px;">
+        <button class="tab tab--active" data-target="tab-all"><span class="lang-en">All</span><span class="lang-hi" style="display:none">सभी</span></button>
+        <button class="tab" data-target="tab-eq"><span class="lang-en">Equities</span><span class="lang-hi" style="display:none">इक्विटी</span></button>
+        <button class="tab" data-target="tab-mf"><span class="lang-en">MFs</span><span class="lang-hi" style="display:none">म्यूचुअल फंड</span></button>
+        <button class="tab" data-target="tab-bonds"><span class="lang-en">Bonds</span><span class="lang-hi" style="display:none">बॉन्ड</span></button>
+        <button class="tab" data-target="tab-gold"><span class="lang-en">Gold</span><span class="lang-hi" style="display:none">सोना</span></button>
+        <button class="tab" data-target="tab-nps"><span class="lang-en">NPS</span><span class="lang-hi" style="display:none">एनपीएस</span></button>
+    </div>
+
+    <!-- Holdings List Macro -->
+    {% macro render_holding(symbol, name, value, pnl, pnl_pct, extra) %}
+        {% set is_pos = pnl >= 0 %}
+        <div class="holding-card">
+            <div class="holding-card__left">
+                <div class="holding-card__symbol">{{ symbol }}</div>
+                <div class="holding-card__name">{{ name }}</div>
+                {% if extra %}<div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px;">{{ extra }}</div>{% endif %}
+            </div>
+            <div class="holding-card__right">
+                <div class="holding-card__value">{{ format_inr(value) }}</div>
+                <div class="holding-card__pnl {% if is_pos %}holding-card__pnl--positive{% else %}holding-card__pnl--negative{% endif %}">
+                    {% if is_pos %}<i data-lucide="trending-up" style="width: 11px; height: 11px; display: inline; vertical-align: middle;"></i>+{% else %}<i data-lucide="trending-down" style="width: 11px; height: 11px; display: inline; vertical-align: middle;"></i>{% endif %}
+                    {{ format_inr(pnl | abs) }} ({% if pnl_pct > 0 %}+{% endif %}{{ "%.1f" | format(pnl_pct) }}%)
+                </div>
+            </div>
+        </div>
+    {% endmacro %}
+
+    <div class="stagger-children" style="display: flex; flex-direction: column; gap: 8px;">
+        
+        <!-- ALL TAB -->
+        <div id="tab-all" class="tab-content">
+            <div style="font-size: var(--text-xs); font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Equities ({{ equities|length }})</div>
+            {% for s in equities %}
+                {{ render_holding(s.symbol, s.name, s.quantity * s.current_price, (s.current_price - s.avg_buy_price) * s.quantity, ((s.current_price - s.avg_buy_price) / s.avg_buy_price) * 100, s.quantity ~ " shares · " ~ s.sector) }}
+            {% endfor %}
+
+            <div style="font-size: var(--text-xs); font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px;">Mutual Funds ({{ mutual_funds|length }})</div>
+            {% for f in mutual_funds %}
+                {{ render_holding(f.category.split(' – ')[0], f.name, f.units * f.nav, f.units * f.nav - f.invested_amount, ((f.units * f.nav - f.invested_amount) / f.invested_amount) * 100, "SIP ₹" ~ f.sip_amount if f.sip_active else "Lumpsum") }}
+            {% endfor %}
+            
+            <div style="font-size: var(--text-xs); font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px;">Bonds & Gold ({{ bonds|length + gold|length }})</div>
+            {% for b in bonds %}
+                {{ render_holding(b.type, b.name, b.units * b.current_price, (b.current_price - b.purchase_price) * b.units, ((b.current_price - b.purchase_price) / b.purchase_price) * 100, b.coupon_rate ~ "% coupon") }}
+            {% endfor %}
+            {% for g in gold %}
+                {{ render_holding("GOLD", g.name, g.grams * g.current_price_per_gram, (g.current_price_per_gram - g.avg_buy_price_per_gram) * g.grams, ((g.current_price_per_gram - g.avg_buy_price_per_gram) / g.avg_buy_price_per_gram) * 100, g.grams ~ "g") }}
+            {% endfor %}
+        </div>
+
+        <!-- INDIVIDUAL TABS -->
+        <div id="tab-eq" class="tab-content" style="display: none;">
+            {% for s in equities %}
+                {{ render_holding(s.symbol, s.name, s.quantity * s.current_price, (s.current_price - s.avg_buy_price) * s.quantity, ((s.current_price - s.avg_buy_price) / s.avg_buy_price) * 100, s.quantity ~ " shares · " ~ s.sector) }}
+            {% endfor %}
+        </div>
+        
+        <div id="tab-mf" class="tab-content" style="display: none;">
+            {% for f in mutual_funds %}
+                {{ render_holding(f.category.split(' – ')[0], f.name, f.units * f.nav, f.units * f.nav - f.invested_amount, ((f.units * f.nav - f.invested_amount) / f.invested_amount) * 100, "SIP ₹" ~ f.sip_amount if f.sip_active else "Lumpsum") }}
+            {% endfor %}
+        </div>
+        
+        <div id="tab-bonds" class="tab-content" style="display: none;">
+            {% for b in bonds %}
+                {{ render_holding(b.type, b.name, b.units * b.current_price, (b.current_price - b.purchase_price) * b.units, ((b.current_price - b.purchase_price) / b.purchase_price) * 100, b.coupon_rate ~ "% coupon") }}
+            {% endfor %}
+        </div>
+        
+        <div id="tab-gold" class="tab-content" style="display: none;">
+            {% for g in gold %}
+                {{ render_holding("GOLD", g.name, g.grams * g.current_price_per_gram, (g.current_price_per_gram - g.avg_buy_price_per_gram) * g.grams, ((g.current_price_per_gram - g.avg_buy_price_per_gram) / g.avg_buy_price_per_gram) * 100, g.grams ~ "g") }}
+            {% endfor %}
+        </div>
+        
+        <div id="tab-nps" class="tab-content" style="display: none;">
+            {{ render_holding("NPS T1", "National Pension Scheme – Tier I", nps.tier1.current_value, nps.tier1.current_value - nps.tier1.total_contribution, ((nps.tier1.current_value - nps.tier1.total_contribution) / nps.tier1.total_contribution) * 100, "E:" ~ nps.tier1.allocation.equity_e ~ "% C:" ~ nps.tier1.allocation.corporate_bond_c ~ "%") }}
+            {{ render_holding("NPS T2", "National Pension Scheme – Tier II", nps.tier2.current_value, nps.tier2.current_value - nps.tier2.total_contribution, ((nps.tier2.current_value - nps.tier2.total_contribution) / nps.tier2.total_contribution) * 100, "PFM: " ~ nps.tier2.pfm) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "app_shell.html" %}
+
+{% block page_content %}
+<div>
+    <h1 style="font-size: var(--text-xl); font-family: var(--font-heading); font-weight: 700; margin-bottom: 16px;">
+        <span class="lang-en">Health Score</span><span class="lang-hi" style="display:none">स्वास्थ्य स्कोर</span>
+    </h1>
+
+    <!-- Score Ring -->
+    <div class="card card--glass card--accent animate-fade-in-up" style="margin-bottom: 20px;">
+        <div class="score-ring-container">
+            <div class="score-ring" style="width: 180px; height: 180px;">
+                <svg class="score-ring__svg" viewBox="0 0 180 180">
+                    <circle class="score-ring__bg" cx="90" cy="90" r="80"></circle>
+                    <circle id="scoreRingProgress" class="score-ring__progress" cx="90" cy="90" r="80" 
+                            style="stroke: {{ health.band_color }}; stroke-dasharray: 502.6; color: {{ health.band_color }};" 
+                            data-score="{{ health.score }}"></circle>
+                </svg>
+                <div class="score-ring__value">
+                    <div class="score-ring__number" id="scoreRingValue" style="color: {{ health.band_color }}">0</div>
+                    <div class="score-ring__label">of 900</div>
+                </div>
+            </div>
+            <div class="score-ring__band" style="background: {{ health.band_color }}18; color: {{ health.band_color }}">
+                {{ health.band }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Signal Breakdown -->
+    <div class="section-header">
+        <h2 class="section-header__title">
+            <span class="lang-en">Score Breakdown</span><span class="lang-hi" style="display:none">स्कोर का विवरण</span>
+        </h2>
+    </div>
+    <div class="stagger-children" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+        
+        <div class="signal-card">
+            <div class="signal-card__gauge" style="color: #00d4aa; border-color: #00d4aa; background: #00d4aa15;">
+                {{ health.signals.diversification.score }}
+            </div>
+            <div class="signal-card__info">
+                <div class="signal-card__name">
+                    <i data-lucide="pie-chart" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px; color: #00d4aa;"></i>
+                    <span class="lang-en">Asset Diversification</span><span class="lang-hi" style="display:none">एसेट डायवर्सिफिकेशन</span>
+                </div>
+                <div class="signal-card__label">{{ health.signals.diversification.label }} · Weight: 30%</div>
+            </div>
+        </div>
+        
+        <div class="signal-card">
+            <div class="signal-card__gauge" style="color: #4e7bff; border-color: #4e7bff; background: #4e7bff15;">
+                {{ health.signals.concentration.score }}
+            </div>
+            <div class="signal-card__info">
+                <div class="signal-card__name">
+                    <i data-lucide="shield" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px; color: #4e7bff;"></i>
+                    <span class="lang-en">Concentration Risk</span><span class="lang-hi" style="display:none">एकाग्रता जोखिम</span>
+                </div>
+                <div class="signal-card__label">{{ health.signals.concentration.label }} · Weight: 25%</div>
+            </div>
+        </div>
+        
+        <div class="signal-card">
+            <div class="signal-card__gauge" style="color: #8b5cf6; border-color: #8b5cf6; background: #8b5cf615;">
+                {{ health.signals.advisor_trust.score }}
+            </div>
+            <div class="signal-card__info">
+                <div class="signal-card__name">
+                    <i data-lucide="users" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px; color: #8b5cf6;"></i>
+                    <span class="lang-en">Advisor Trust Index</span><span class="lang-hi" style="display:none">सलाहकार विश्वास सूचकांक</span>
+                </div>
+                <div class="signal-card__label">{{ health.signals.advisor_trust.label }} · Weight: 20%</div>
+            </div>
+        </div>
+        
+        <div class="signal-card">
+            <div class="signal-card__gauge" style="color: #f0c000; border-color: #f0c000; background: #f0c00015;">
+                {{ health.signals.behavioural.score }}
+            </div>
+            <div class="signal-card__info">
+                <div class="signal-card__name">
+                    <i data-lucide="brain" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px; color: #f0c000;"></i>
+                    <span class="lang-en">Behavioural Discipline</span><span class="lang-hi" style="display:none">व्यावहारिक अनुशासन</span>
+                </div>
+                <div class="signal-card__label">{{ health.signals.behavioural.label }} · Weight: 25%</div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Drift Analysis -->
+    <div style="margin-bottom: 24px;">
+        <div class="section-header">
+            <h2 class="section-header__title">
+                <span class="lang-en">Portfolio Drift</span><span class="lang-hi" style="display:none">पोर्टफोलियो ड्रिफ्ट</span>
+            </h2>
+        </div>
+        <div class="card">
+            {% for asset, vals in health.signals.diversification.details.items() %}
+            <div class="drift-bar">
+                <div class="drift-bar__label">
+                    <span>{{ asset | replace('_', ' ') | title }}</span>
+                    <span style="color: var(--text-secondary); font-size: var(--text-xs);">
+                        {{ vals.actual }}% / {{ vals.ideal }}%
+                    </span>
+                </div>
+                <div class="drift-bar__track">
+                    <div class="drift-bar__actual" style="width: {{ [vals.actual, 100]|min }}%; background: {% if vals.deviation > 10 %}var(--color-warning){% else %}var(--accent-teal){% endif %};"></div>
+                    <div class="drift-bar__ideal" style="left: {{ vals.ideal }}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+            <div style="display: flex; gap: 16px; margin-top: 12px; font-size: var(--text-xs); color: var(--text-tertiary);">
+                <span>█ <span class="lang-en">Actual</span><span class="lang-hi" style="display:none">वास्तविक</span></span>
+                <span>┊ <span class="lang-en">Ideal ({{ health.profile.risk_profile }})</span><span class="lang-hi" style="display:none">आदर्श</span></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

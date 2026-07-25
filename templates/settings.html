@@ -1,0 +1,76 @@
+{% extends "app_shell.html" %}
+
+{% block page_content %}
+<div class="settings-page stagger-children" style="display: flex; flex-direction: column; gap: 24px;">
+    <!-- Header -->
+    <div class="section-header" style="margin-bottom: 0;">
+        <h2 class="section-header__title">
+            <span class="lang-en">Settings & Profile</span><span class="lang-hi" style="display:none">सेटिंग्स और प्रोफाइल</span>
+        </h2>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div style="width: 100%;">
+        {% for category, message in messages %}
+        <div class="alert-card alert-card--{{ 'danger' if category == 'error' else 'success' }}" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span>{% if category == 'error' %}⚠️{% else %}✅{% endif %}</span>
+                <span>{{ message }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Profile Edit Form -->
+    <div class="card">
+        <h3 style="font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-lg); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-sm);">Profile Information</h3>
+        <form method="POST" action="{{ url_for('settings_update') }}" class="login-form">
+            <div class="form-field">
+                <label class="form-field__label" for="name">Full Name</label>
+                <div class="input-group">
+                    <i data-lucide="user" class="input-group__icon" style="width: 16px; height: 16px;"></i>
+                    <input type="text" id="name" name="name" class="input input--with-icon" value="{{ user.name }}" required>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-field__label" for="phone">Phone Number</label>
+                <div class="input-group">
+                    <i data-lucide="phone" class="input-group__icon" style="width: 16px; height: 16px;"></i>
+                    <input type="tel" id="phone" name="phone" class="input input--with-icon" value="{{ user.phone or '' }}">
+                </div>
+            </div>
+            
+            <div class="form-field">
+                <label class="form-field__label" for="risk_profile">Risk Profile</label>
+                <select id="risk_profile" name="risk_profile" class="input" style="padding-left: 14px;">
+                    <option value="Conservative" {% if user.risk_profile == 'Conservative' %}selected{% endif %}>Conservative</option>
+                    <option value="Moderate" {% if user.risk_profile == 'Moderate' %}selected{% endif %}>Moderate</option>
+                    <option value="Aggressive" {% if user.risk_profile == 'Aggressive' %}selected{% endif %}>Aggressive</option>
+                </select>
+            </div>
+
+            <!-- Read-only fields (or optionally editable depending on your preference) -->
+            <div class="form-field">
+                <label class="form-field__label" for="email">Email Address (Read-only)</label>
+                <div class="input-group">
+                    <i data-lucide="mail" class="input-group__icon" style="width: 16px; height: 16px;"></i>
+                    <input type="email" id="email" class="input input--with-icon" value="{{ user.email }}" disabled style="opacity: 0.6; cursor: not-allowed;">
+                </div>
+            </div>
+
+
+
+            <button type="submit" class="btn btn--primary" style="margin-top: var(--space-md);">
+                Save Changes
+            </button>
+        </form>
+    </div>
+
+
+</div>
+{% endblock %}

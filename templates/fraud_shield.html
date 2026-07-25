@@ -1,0 +1,77 @@
+{% extends "app_shell.html" %}
+
+{% block page_content %}
+<div>
+    <div style="margin-bottom: 20px;">
+        <h1 style="font-size: var(--text-xl); font-family: var(--font-heading); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="shield-alert" style="width: 24px; height: 24px; color: var(--accent-teal);"></i>
+            <span class="lang-en">Fraud Shield</span><span class="lang-hi" style="display:none">फ्रॉड शील्ड</span>
+        </h1>
+        <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: 4px;">
+            <span class="lang-en">Verify advisors, schemes, and apps against the official SEBI registry before investing.</span>
+            <span class="lang-hi" style="display:none">निवेश करने से पहले आधिकारिक SEBI रजिस्ट्री के खिलाफ सलाहकारों, योजनाओं और ऐप्स को सत्यापित करें।</span>
+        </p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="input-group" style="margin-bottom: 20px; position: relative;">
+        <i data-lucide="search" class="input-group__icon" style="width: 18px; height: 18px;"></i>
+        <input id="searchInput" class="input input--with-icon" placeholder="Search name, firm, or registration number" autocomplete="off" />
+        
+        <button id="clearSearchBtn" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-tertiary); padding: 4px;">
+            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+        </button>
+
+        <div id="suggestionsBox" class="suggestions" style="display: none;"></div>
+    </div>
+
+    <button id="searchBtn" class="btn btn--primary btn--full" style="margin-bottom: 24px;">
+        <i data-lucide="search" style="width: 16px; height: 16px;"></i>
+        Check Entity
+    </button>
+
+    <!-- Result Area -->
+    <div id="resultContainer" style="margin-bottom: 24px;"></div>
+
+    <!-- Quick Check Chips -->
+    <div id="defaultChips" style="margin-bottom: 24px;">
+        <div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+            Try searching:
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button class="btn btn--secondary btn--sm chip-btn">Zerodha</button>
+            <button class="btn btn--secondary btn--sm chip-btn">QuickProfit</button>
+            <button class="btn btn--secondary btn--sm chip-btn">Priya Sharma</button>
+            <button class="btn btn--secondary btn--sm chip-btn">StockKing</button>
+            <button class="btn btn--secondary btn--sm chip-btn">FinanceGuru_YT</button>
+        </div>
+    </div>
+
+    <!-- Recent Alerts -->
+    <div>
+        <div class="section-header">
+            <h2 class="section-header__title" style="display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="alert-triangle" style="width: 16px; height: 16px; color: var(--color-danger);"></i>
+                <span class="lang-en">Recent Scam Alerts</span><span class="lang-hi" style="display:none">हाल के घोटाले अलर्ट</span>
+            </h2>
+        </div>
+        <div class="stagger-children" style="display: flex; flex-direction: column; gap: 10px;">
+            {% for alert in recent_alerts %}
+            <div class="scam-alert-item">
+                <div class="scam-alert-item__header">
+                    <span class="scam-alert-item__name">{{ alert.scheme_name }}</span>
+                    <span class="scam-alert-item__date">{{ alert.alert_date }}</span>
+                </div>
+                <div class="scam-alert-item__type">
+                    <span class="badge {% if alert.risk_level == 'Critical' %}badge--danger{% else %}badge--warning{% endif %}" style="margin-right: 6px;">
+                        {{ alert.risk_level }}
+                    </span>
+                    {{ alert.type }}
+                </div>
+                <div class="scam-alert-item__desc">{{ alert.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

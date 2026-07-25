@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="app-shell">
+    <header class="app-header">
+        <div class="app-header__logo">
+            <div class="app-header__logo-icon">MV</div>
+            <span class="app-header__title">Mohan's Vision</span>
+        </div>
+        <div class="app-header__actions">
+            <button class="lang-toggle" id="langToggle" title="Toggle Language">
+                <i data-lucide="globe" style="width: 13px; height: 13px;"></i>
+                <span class="en-label lang-toggle__active">EN</span>
+                <span>/</span>
+                <span class="hi-label">हि</span>
+            </button>
+            <a href="{{ url_for('settings') }}" class="lang-toggle" title="Settings" style="color: var(--text-secondary);">
+                <i data-lucide="settings" style="width: 13px; height: 13px;"></i>
+            </a>
+            <a href="{{ url_for('logout') }}" class="lang-toggle" title="Logout" style="color: var(--color-danger);">
+                <i data-lucide="log-out" style="width: 13px; height: 13px;"></i>
+            </a>
+        </div>
+    </header>
+
+    <main class="page-content">
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="{{ url_for('dashboard') }}" class="bottom-nav__item {% if request.endpoint == 'dashboard' %}bottom-nav__item--active{% endif %}">
+            <i data-lucide="home" class="bottom-nav__icon"></i>
+            <span class="lang-en">Home</span><span class="lang-hi" style="display:none">होम</span>
+        </a>
+        <a href="{{ url_for('portfolio') }}" class="bottom-nav__item {% if request.endpoint == 'portfolio' %}bottom-nav__item--active{% endif %}">
+            <i data-lucide="briefcase" class="bottom-nav__icon"></i>
+            <span class="lang-en">Portfolio</span><span class="lang-hi" style="display:none">पोर्टफोलियो</span>
+        </a>
+        <a href="{{ url_for('health_score') }}" class="bottom-nav__item {% if request.endpoint == 'health_score' %}bottom-nav__item--active{% endif %}">
+            <i data-lucide="activity" class="bottom-nav__icon"></i>
+            <span class="lang-en">Score</span><span class="lang-hi" style="display:none">स्कोर</span>
+        </a>
+        <a href="{{ url_for('fraud_shield') }}" class="bottom-nav__item {% if request.endpoint == 'fraud_shield' %}bottom-nav__item--active{% endif %}">
+            <i data-lucide="shield" class="bottom-nav__icon"></i>
+            <span class="lang-en">Shield</span><span class="lang-hi" style="display:none">शील्ड</span>
+        </a>
+        <a href="{{ url_for('goals') }}" class="bottom-nav__item {% if request.endpoint == 'goals' %}bottom-nav__item--active{% endif %}">
+            <i data-lucide="target" class="bottom-nav__icon"></i>
+            <span class="lang-en">Goals</span><span class="lang-hi" style="display:none">लक्ष्य</span>
+        </a>
+    </nav>
+
+    {% include 'partials/chatbot.html' %}
+</div>
+
+<style>
+    /* Simple CSS for language toggle based on document language */
+    html[lang="hi"] .lang-en { display: none !important; }
+    html[lang="hi"] .lang-hi { display: inline !important; }
+    html[lang="hi"] .en-label { font-weight: normal; color: var(--text-tertiary); }
+    html[lang="hi"] .hi-label { font-weight: 700; color: var(--accent-teal); }
+    
+    html[lang="en"] .lang-en { display: inline !important; }
+    html[lang="en"] .lang-hi { display: none !important; }
+    html[lang="en"] .en-label { font-weight: 700; color: var(--accent-teal); }
+    html[lang="en"] .hi-label { font-weight: normal; color: var(--text-tertiary); }
+</style>
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% endblock %}
