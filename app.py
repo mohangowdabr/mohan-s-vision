@@ -2,12 +2,7 @@
 Super App for Unified Multi-Asset Investing and Awareness."""
 
 import json
-import random
-import time
-import smtplib
 import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash
 from datetime import datetime
 
@@ -18,48 +13,7 @@ try:
 except ImportError:
     pass
 
-MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
-MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
 
-
-def send_otp_email(to_email: str, otp_code: str, user_name: str) -> bool:
-    """Send OTP to user's email via Gmail SMTP. Returns True on success."""
-    if not MAIL_USERNAME or not MAIL_PASSWORD or "your_" in MAIL_USERNAME:
-        # Fallback: print to terminal
-        print("\n" + "="*50)
-        print(f"📧 EMAIL SENT TO: {to_email}")
-        print(f"🔑 YOUR MOHAN'S VISION OTP IS: {otp_code}")
-        print("="*50 + "\n")
-        return True
-
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"{otp_code} is your Mohan's Vision verification code"
-        msg["From"] = f"Mohan's Vision <{MAIL_USERNAME}>"
-        msg["To"] = to_email
-
-        html_body = f"""
-        <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;background:#0a0e27;color:#fff;border-radius:16px;padding:32px;">
-            <h2 style="color:#7c6af7;margin-bottom:8px;">Mohan's Vision 🔐</h2>
-            <p style="color:#aaa;">Hi {user_name}, here is your one-time verification code:</p>
-            <div style="background:#1a1f3a;border-radius:12px;padding:24px;text-align:center;margin:24px 0;">
-                <span style="font-size:40px;font-weight:700;letter-spacing:12px;color:#7c6af7;">{otp_code}</span>
-            </div>
-            <p style="color:#aaa;font-size:13px;">This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
-            <p style="color:#555;font-size:12px;margin-top:24px;">If you didn't request this, please ignore this email.</p>
-        </div>
-        """
-        msg.attach(MIMEText(html_body, "html"))
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(MAIL_USERNAME, MAIL_PASSWORD)
-            server.sendmail(MAIL_USERNAME, to_email, msg.as_string())
-        return True
-    except Exception as e:
-        print(f"[Email Error] {e}")
-        # Fallback to terminal
-        print(f"🔑 OTP for {to_email}: {otp_code}")
-        return False
 
 from engine.health_score import compute_health_score, IDEAL_ALLOCATIONS
 from engine.fraud_check import check_entity, get_recent_scam_alerts, get_search_suggestions
@@ -107,61 +61,14 @@ app.jinja_env.globals["now"] = datetime.now
 
 # ── Auth routes ──
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login")
 def login():
-    if "user_id" in session:
-        return redirect(url_for("dashboard"))
-
-    if request.method == "POST":
-        mode = request.form.get("mode", "login")
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
-
-        if mode == "signup":
-            name = request.form.get("name", "").strip()
-            phone = request.form.get("phone", "").strip()
-
-            if not name or not email or not password:
-                flash("Please fill in all required fields.", "error")
-                return redirect(url_for("login"))
-
-            # Instead of registering immediately, generate an OTP
-            otp_code = f"{random.randint(100000, 999999)}"
-            session["signup_data"] = {
-                "name": name,
-                "email": email,
-                "phone": phone,
-                "password": password
-            }
-            session["signup_otp"] = otp_code
-            session["signup_otp_expiry"] = time.time() + 600  # 10 minutes expiry
-
-            # Send OTP to user's email
-            send_otp_email(email, otp_code, name)
-
-            return redirect(url_for("verify_otp"))
-        else:
-            # Login mode
-            if not email or not password:
-                flash("Please enter your email and password.", "error")
-                return redirect(url_for("login"))
-
-            success, result = authenticate_user(email, password)
-            if success:
-                session["user_id"] = result["id"]
-                session["user_name"] = result["name"]
-                return redirect(url_for("dashboard"))
-            else:
-                flash(result, "error")
-                return redirect(url_for("login"))
-
     return render_template("login.html")
 
 
 @app.route("/logout")
 def logout():
     session.clear()
-    flash("You've been logged out.", "success")
     return redirect(url_for("login"))
 
 
@@ -175,13 +82,12 @@ def onboarding():
 
 
 @app.route("/dashboard")
-@login_required
 def dashboard():
     health_data = compute_health_score()
     goal_data = compute_all_goals(financial_goals)
     tod_en, tod_hi = get_time_of_day()
     user = get_current_user()
-    display_name = user["name"].split()[0] if user else "User"
+    display_name = user["name"].split()[0] if user else "Guest"
     return render_template(
         "dashboard.html",
         health=health_data,
@@ -195,7 +101,6 @@ def dashboard():
 
 
 @app.route("/portfolio")
-@login_required
 def portfolio():
     holdings = compute_holdings()
     return render_template(
@@ -212,7 +117,6 @@ def portfolio():
 
 
 @app.route("/score")
-@login_required
 def health_score():
     health_data = compute_health_score()
     return render_template(
@@ -223,7 +127,6 @@ def health_score():
 
 
 @app.route("/shield")
-@login_required
 def fraud_shield():
     recent_alerts = get_recent_scam_alerts(6)
     return render_template(
@@ -233,7 +136,6 @@ def fraud_shield():
 
 
 @app.route("/voices")
-@login_required
 def verified_voices():
     return render_template(
         "verified_voices.html",
@@ -243,7 +145,6 @@ def verified_voices():
 
 
 @app.route("/goals")
-@login_required
 def goals():
     goal_data = compute_all_goals(financial_goals)
     total_target = sum(g["target_amount"] for g in goal_data)
@@ -261,14 +162,12 @@ def goals():
 
 
 @app.route("/settings")
-@login_required
 def settings():
     user = get_current_user()
-    linked_accounts = get_linked_accounts(user["id"])
+    linked_accounts = get_linked_accounts(user["id"]) if user else []
     return render_template("settings.html", user=user, linked_accounts=linked_accounts)
 
 @app.route("/settings/update", methods=["POST"])
-@login_required
 def settings_update():
     user = get_current_user()
     name = request.form.get("name", "").strip()

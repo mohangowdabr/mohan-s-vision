@@ -1,193 +1,247 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="login-page">
-    <div class="login-container animate-fade-in">
-        <!-- Logo -->
-        <div class="login-logo animate-float">RL</div>
-        <h1 class="login-title">mohan's vision</h1>
-        <p class="login-subtitle" id="loginSubtitle">Welcome back! Ready to dive in?</p>
+<style>
+  .landing-wrap {
+    min-height: 100vh;
+    width: 100%;
+    background: #05071a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 40px;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    animation: orbFloat 8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 { width:280px;height:280px;background:radial-gradient(circle,rgba(124,106,247,.35),transparent 70%);top:-60px;left:-80px;animation-delay:0s; }
+  .orb-2 { width:220px;height:220px;background:radial-gradient(circle,rgba(56,189,248,.25),transparent 70%);top:160px;right:-60px;animation-delay:-3s; }
+  .orb-3 { width:200px;height:200px;background:radial-gradient(circle,rgba(16,185,129,.2),transparent 70%);bottom:200px;left:-40px;animation-delay:-5s; }
+  @keyframes orbFloat {
+    0%,100%{ transform:translate(0,0) scale(1); }
+    33%    { transform:translate(20px,-30px) scale(1.08); }
+    66%    { transform:translate(-15px,20px) scale(.95); }
+  }
+  #particleCanvas { position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.45; }
+  .hero { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:56px 24px 16px;text-align:center; }
+  .logo-ring {
+    width:80px;height:80px;border-radius:24px;
+    background:linear-gradient(135deg,#7c6af7,#38bdf8);
+    display:flex;align-items:center;justify-content:center;
+    font-size:28px;font-weight:800;color:#fff;font-family:'Outfit',sans-serif;
+    box-shadow:0 0 40px rgba(124,106,247,.55),0 0 80px rgba(124,106,247,.2);
+    margin-bottom:20px;
+    animation:logoPulse 3s ease-in-out infinite;
+  }
+  @keyframes logoPulse {
+    0%,100%{ box-shadow:0 0 40px rgba(124,106,247,.55),0 0 80px rgba(124,106,247,.2); }
+    50%    { box-shadow:0 0 60px rgba(124,106,247,.8),0 0 120px rgba(124,106,247,.35); }
+  }
+  .hero-title {
+    font-family:'Outfit',sans-serif;font-size:30px;font-weight:800;line-height:1.15;
+    margin:0 0 10px;
+    background:linear-gradient(135deg,#fff 30%,#a78bfa 80%,#38bdf8);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    opacity:0;animation:fadeUp .7s ease .2s forwards;
+  }
+  .hero-sub { font-size:14px;color:#94a3b8;max-width:280px;line-height:1.6;margin:0 0 12px;opacity:0;animation:fadeUp .7s ease .4s forwards; }
+  .badge-live {
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);
+    border-radius:99px;padding:5px 14px;font-size:11px;color:#10b981;font-weight:600;letter-spacing:.5px;
+    margin-bottom:24px;opacity:0;animation:fadeUp .7s ease .6s forwards;
+  }
+  .badge-live .dot { width:6px;height:6px;border-radius:50%;background:#10b981;animation:blink 1.4s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div style="width: 100%; max-width: 320px;">
-            {% for category, message in messages %}
-            <div class="alert-card alert-card--{{ 'danger' if category == 'error' else 'success' }}"
-                style="margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>{% if category == 'error' %}⚠️{% else %}✅{% endif %}</span>
-                    <span>{{ message }}</span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        {% endwith %}
+  .ticker-wrap {
+    width:100%;overflow:hidden;
+    background:rgba(255,255,255,.03);
+    border-top:1px solid rgba(255,255,255,.06);
+    border-bottom:1px solid rgba(255,255,255,.06);
+    padding:10px 0;position:relative;z-index:1;
+    opacity:0;animation:fadeUp .6s ease .8s forwards;
+  }
+  .ticker-track { display:flex;gap:32px;white-space:nowrap;animation:ticker 22s linear infinite; }
+  @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+  .ticker-item { display:inline-flex;align-items:center;gap:8px;font-size:12px;font-family:'Outfit',sans-serif; }
+  .ticker-name { color:#94a3b8;font-weight:500; }
+  .ticker-price { color:#e2e8f0;font-weight:600; }
+  .ticker-chg.up   { color:#10b981; }
+  .ticker-chg.down { color:#f43f5e; }
 
-        <!-- Error Container (for JS validation) -->
-        <div id="errorContainer" style="width: 100%; max-width: 320px; display: none;">
-            <div class="alert-card alert-card--danger" style="margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>⚠️</span>
-                    <span id="errorMessage"></span>
-                </div>
-            </div>
-        </div>
+  .stats-row {
+    position:relative;z-index:1;display:flex;gap:10px;
+    padding:16px 20px 0;width:100%;max-width:380px;
+    opacity:0;animation:fadeUp .6s ease 1.0s forwards;
+  }
+  .stat-box { flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px 10px;text-align:center; }
+  .stat-val { font-size:20px;font-weight:800;color:#a78bfa;font-family:'Outfit',sans-serif;display:block; }
+  .stat-lbl { font-size:10px;color:#475569;margin-top:2px;display:block;letter-spacing:.3px; }
 
-        <!-- Login Form -->
-        <form id="loginForm" class="login-form" method="POST" action="{{ url_for('login') }}">
-            <input type="hidden" name="mode" id="formMode" value="login">
+  .features { position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;padding:16px 20px 0;width:100%;max-width:380px; }
+  .feat-card {
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;
+    padding:16px 18px;display:flex;align-items:center;gap:14px;
+    opacity:0;transform:translateX(-24px);
+    transition:border-color .3s,background .3s,transform .3s;cursor:default;
+  }
+  .feat-card:hover { background:rgba(255,255,255,.07);border-color:rgba(124,106,247,.4);transform:translateX(4px) !important; }
+  .feat-card.visible { animation:slideIn .5s ease forwards; }
+  @keyframes slideIn { to{opacity:1;transform:translateX(0)} }
+  .feat-icon { width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+  .feat-icon.purple { background:rgba(124,106,247,.15); }
+  .feat-icon.teal   { background:rgba(56,189,248,.15); }
+  .feat-icon.green  { background:rgba(16,185,129,.15); }
+  .feat-icon.gold   { background:rgba(245,158,11,.15); }
+  .feat-icon.rose   { background:rgba(244,63,94,.15); }
+  .feat-text h3 { font-size:14px;font-weight:700;color:#f1f5f9;margin:0 0 3px;font-family:'Outfit',sans-serif; }
+  .feat-text p  { font-size:12px;color:#64748b;margin:0;line-height:1.4; }
 
-            <!-- Signup-only fields -->
-            <div class="signup-fields" style="display: none;">
-                <div class="form-field animate-fade-in-up" style="animation-delay: 0.1s;">
-                    <label class="form-field__label" for="name">Full Name</label>
-                    <div class="input-group">
-                        <i data-lucide="user" class="input-group__icon" style="width: 16px; height: 16px;"></i>
-                        <input type="text" id="name" name="name" class="input input--with-icon"
-                            placeholder="Arjun Mehta" autocomplete="name">
-                    </div>
-                </div>
-                <div class="form-field animate-fade-in-up" style="animation-delay: 0.2s;">
-                    <label class="form-field__label" for="phone">Phone Number</label>
-                    <div class="input-group">
-                        <i data-lucide="phone" class="input-group__icon" style="width: 16px; height: 16px;"></i>
-                        <input type="tel" id="phone" name="phone" class="input input--with-icon"
-                            placeholder="+91 98765 43210" autocomplete="tel">
-                    </div>
-                </div>
-            </div>
+  .cta-wrap { position:relative;z-index:1;padding:24px 20px 12px;width:100%;max-width:380px;opacity:0;animation:fadeUp .6s ease 1.6s forwards; }
+  .cta-btn {
+    width:100%;padding:16px;border:none;border-radius:16px;
+    background:linear-gradient(135deg,#7c6af7,#5b5cf6,#38bdf8);
+    background-size:200% 200%;color:#fff;font-size:16px;font-weight:700;
+    font-family:'Outfit',sans-serif;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    animation:gradShift 4s ease infinite;
+    box-shadow:0 8px 30px rgba(124,106,247,.4);
+    transition:transform .2s,box-shadow .2s;text-decoration:none;
+  }
+  .cta-btn:hover { transform:translateY(-2px);box-shadow:0 12px 40px rgba(124,106,247,.6); }
+  .cta-btn:active { transform:scale(.98); }
+  @keyframes gradShift { 0%,100%{background-position:0% 50%}50%{background-position:100% 50%} }
+  .cta-arrow { width:22px;height:22px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .3s; }
+  .cta-btn:hover .cta-arrow { transform:translateX(3px); }
+  .cta-note { text-align:center;font-size:11px;color:#334155;margin-top:10px;letter-spacing:.3px; }
 
-            <!-- Common fields -->
-            <div class="form-field animate-fade-in-up" style="animation-delay: 0.3s;">
-                <label class="form-field__label" for="email">Email Address</label>
-                <div class="input-group">
-                    <i data-lucide="mail" class="input-group__icon" style="width: 16px; height: 16px;"></i>
-                    <input type="email" id="email" name="email" class="input input--with-icon"
-                        placeholder="arjun@email.com" required autocomplete="email">
-                </div>
-            </div>
+  .scroll-hint { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 0 0;opacity:0;animation:fadeUp .6s ease 2s forwards; }
+  .scroll-hint span { font-size:10px;color:#334155;letter-spacing:1px;text-transform:uppercase; }
+  .scroll-dot { width:4px;height:12px;background:#334155;border-radius:2px;animation:scrollBob 1.5s ease-in-out infinite; }
+  @keyframes scrollBob { 0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(4px);opacity:1} }
+</style>
 
-            <div class="form-field animate-fade-in-up" style="animation-delay: 0.4s;">
-                <label class="form-field__label" for="password">Password</label>
-                <div class="input-group">
-                    <i data-lucide="lock" class="input-group__icon" style="width: 16px; height: 16px;"></i>
-                    <input type="password" id="password" name="password" class="input input--with-icon"
-                        placeholder="••••••••" required minlength="6" autocomplete="current-password">
-                    <button type="button" class="password-toggle" id="togglePassword" tabindex="-1">
-                        <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
-                    </button>
-                </div>
-            </div>
+<div class="landing-wrap">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <canvas id="particleCanvas"></canvas>
 
-            <!-- Confirm Password (signup only) -->
-            <div class="form-field signup-fields animate-fade-in-up" style="display: none; animation-delay: 0.5s;">
-                <label class="form-field__label" for="confirmPassword">Confirm Password</label>
-                <div class="input-group">
-                    <i data-lucide="lock" class="input-group__icon" style="width: 16px; height: 16px;"></i>
-                    <input type="password" id="confirmPassword" name="confirm_password" class="input input--with-icon"
-                        placeholder="••••••••" autocomplete="new-password">
-                </div>
-            </div>
+  <div class="hero">
+    <div class="logo-ring">MV</div>
+    <h1 class="hero-title">Mohan's Vision</h1>
+    <p class="hero-sub">Your unified wealth command center — invest smarter, stay protected.</p>
+    <div class="badge-live"><span class="dot"></span>MARKETS LIVE</div>
+  </div>
 
-            <button type="submit" class="btn btn--primary btn--full login-submit animate-fade-in-up" style="animation-delay: 0.6s;" id="submitBtn">
-                <span id="submitText">Sign In</span>
-                <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
-            </button>
-        </form>
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
 
-        <!-- Toggle between login/signup -->
-        <div class="login-toggle">
-            <span id="toggleLabel" class="text-secondary">Don't have an account?</span>
-            <button type="button" id="toggleMode" class="btn btn--ghost" style="padding: 4px 8px;">Sign Up</button>
-        </div>
+  <div class="stats-row">
+    <div class="stat-box"><span class="stat-val" id="statAum">₹0</span><span class="stat-lbl">PORTFOLIO AUM</span></div>
+    <div class="stat-box"><span class="stat-val" id="statGains">0%</span><span class="stat-lbl">AVG. RETURNS</span></div>
+    <div class="stat-box"><span class="stat-val" id="statScore">0</span><span class="stat-lbl">HEALTH SCORE</span></div>
+  </div>
 
-        <!-- Demo access -->
-        <div style="margin-top: 16px;">
-            <a href="{{ url_for('dashboard') }}?demo=true" class="btn btn--ghost"
-                style="font-size: var(--text-sm); opacity: 0.6;">
-                <i data-lucide="play-circle" style="width: 14px; height: 14px;"></i>
-                Try Demo Mode
-            </a>
-        </div>
-    </div>
+  <div class="features">
+    <div class="feat-card" data-delay="0.1"><div class="feat-icon purple">📊</div><div class="feat-text"><h3>Unified Portfolio</h3><p>Equities, MFs, bonds, gold &amp; NPS in one live dashboard</p></div></div>
+    <div class="feat-card" data-delay="0.2"><div class="feat-icon green">🩺</div><div class="feat-text"><h3>Financial Health Score</h3><p>AI-powered score with personalized rebalancing tips</p></div></div>
+    <div class="feat-card" data-delay="0.3"><div class="feat-icon rose">🛡️</div><div class="feat-text"><h3>Fraud Shield</h3><p>Detect fake advisors &amp; scam schemes before it's too late</p></div></div>
+    <div class="feat-card" data-delay="0.4"><div class="feat-icon teal">🎯</div><div class="feat-text"><h3>Goal Tracker</h3><p>Track retirement, home, education &amp; travel goals live</p></div></div>
+    <div class="feat-card" data-delay="0.5"><div class="feat-icon gold">🎓</div><div class="feat-text"><h3>Verified Expert Voices</h3><p>Curated content from SEBI-registered advisors only</p></div></div>
+  </div>
+
+  <div class="cta-wrap">
+    <a href="{{ url_for('dashboard') }}" class="cta-btn">
+      Enter App
+      <span class="cta-arrow">→</span>
+    </a>
+    <p class="cta-note">🔒 Your data stays private &amp; secure</p>
+  </div>
+
+  <div class="scroll-hint"><span>scroll to explore</span><div class="scroll-dot"></div></div>
 </div>
 
 <script>
-    let isSignup = false;
-
-    document.getElementById('toggleMode').addEventListener('click', () => {
-        isSignup = !isSignup;
-        const signupFields = document.querySelectorAll('.signup-fields');
-        const subtitle = document.getElementById('loginSubtitle');
-        const submitText = document.getElementById('submitText');
-        const toggleLabel = document.getElementById('toggleLabel');
-        const toggleBtn = document.getElementById('toggleMode');
-        const formMode = document.getElementById('formMode');
-
-        signupFields.forEach(el => {
-            el.style.display = isSignup ? 'block' : 'none';
-        });
-
-        if (isSignup) {
-            subtitle.textContent = "Hey there! Let's get you set up.";
-            submitText.textContent = 'Create Account';
-            toggleLabel.textContent = 'Already have an account?';
-            toggleBtn.textContent = 'Sign In';
-            formMode.value = 'signup';
-        } else {
-            subtitle.textContent = 'Welcome back! Ready to dive in?';
-            submitText.textContent = 'Sign In';
-            toggleLabel.textContent = "Don't have an account?";
-            toggleBtn.textContent = 'Sign Up';
-            formMode.value = 'login';
-        }
-
-        // Re-initialize lucide icons for newly visible elements
-        if (window.lucide) lucide.createIcons();
+(function(){
+  const canvas=document.getElementById('particleCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight;}
+  resize();window.addEventListener('resize',resize);
+  function rnd(a,b){return a+Math.random()*(b-a);}
+  for(let i=0;i<55;i++){
+    particles.push({x:rnd(0,400),y:rnd(0,800),r:rnd(.8,2.5),dx:rnd(-.3,.3),dy:rnd(-.5,-.15),
+      alpha:rnd(.2,.7),color:['#7c6af7','#38bdf8','#10b981','#f59e0b'][Math.floor(Math.random()*4)]});
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.color;ctx.globalAlpha=p.alpha;ctx.fill();
+      p.x+=p.dx;p.y+=p.dy;
+      if(p.y<-4){p.y=H+4;p.x=rnd(0,W);}
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
     });
+    ctx.globalAlpha=1;requestAnimationFrame(draw);
+  }
+  draw();
+})();
 
-    // Password visibility toggle
-    document.getElementById('togglePassword').addEventListener('click', function () {
-        const pwd = document.getElementById('password');
-        const icon = this.querySelector('i');
-        if (pwd.type === 'password') {
-            pwd.type = 'text';
-            icon.setAttribute('data-lucide', 'eye-off');
-        } else {
-            pwd.type = 'password';
-            icon.setAttribute('data-lucide', 'eye');
-        }
-        if (window.lucide) lucide.createIcons();
-    });
+const tickers=[
+  {name:'NIFTY 50',price:'24,832.65',chg:'+0.87%',up:true},
+  {name:'SENSEX',price:'81,420.18',chg:'+0.72%',up:true},
+  {name:'GOLD',price:'₹72,450',chg:'-0.12%',up:false},
+  {name:'USD/INR',price:'83.74',chg:'-0.05%',up:false},
+  {name:'BANK NIFTY',price:'52,310.40',chg:'+1.14%',up:true},
+  {name:'NIFTY IT',price:'38,750.90',chg:'+2.01%',up:true},
+  {name:'CRUDE OIL',price:'$83.20',chg:'-0.34%',up:false},
+  {name:'MIDCAP 150',price:'44,618.55',chg:'+0.56%',up:true},
+];
+function buildTicker(items){
+  return items.map(t=>`<span class="ticker-item"><span class="ticker-name">${t.name}</span><span class="ticker-price">${t.price}</span><span class="ticker-chg ${t.up?'up':'down'}">${t.chg}</span></span>`).join('');
+}
+const track=document.getElementById('tickerTrack');
+const html=buildTicker(tickers);
+track.innerHTML=html+html;
 
-    // Client-side validation
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-        const errorContainer = document.getElementById('errorContainer');
-        const errorMsg = document.getElementById('errorMessage');
+const cards=document.querySelectorAll('.feat-card');
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const c=e.target;const delay=parseFloat(c.dataset.delay||0);
+      setTimeout(()=>c.classList.add('visible'),delay*1000);obs.unobserve(c);
+    }
+  });
+},{threshold:.15});
+cards.forEach(c=>obs.observe(c));
 
-        if (isSignup) {
-            const name = document.getElementById('name').value.trim();
-
-            if (!name) {
-                e.preventDefault();
-                errorMsg.textContent = 'Please enter your full name.';
-                errorContainer.style.display = 'block';
-                return;
-            }
-
-            const password = document.getElementById('password').value;
-            const confirm = document.getElementById('confirmPassword').value;
-            if (password !== confirm) {
-                e.preventDefault();
-                errorMsg.textContent = 'Passwords do not match.';
-                errorContainer.style.display = 'block';
-                return;
-            }
-        }
-
-        errorContainer.style.display = 'none';
-    });
+function animCounter(el,target,prefix,suffix,duration){
+  let startTime=null;
+  function step(ts){
+    if(!startTime)startTime=ts;
+    const p=Math.min((ts-startTime)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    const val=Math.round(target*ease);
+    el.textContent=prefix+val.toLocaleString('en-IN')+suffix;
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+setTimeout(()=>{
+  animCounter(document.getElementById('statAum'),47,'₹','L',1800);
+  animCounter(document.getElementById('statGains'),18,'','%',1600);
+  animCounter(document.getElementById('statScore'),76,'','',1400);
+},1000);
 </script>
 {% endblock %}
