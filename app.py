@@ -165,44 +165,6 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/verify-otp", methods=["GET", "POST"])
-def verify_otp():
-    if "signup_data" not in session or "signup_otp" not in session:
-        flash("Session expired. Please sign up again.", "error")
-        return redirect(url_for("login"))
-
-    if request.method == "POST":
-        user_otp = request.form.get("otp", "").strip()
-        actual_otp = session.get("signup_otp")
-        expiry = session.get("signup_otp_expiry", 0)
-
-        if time.time() > expiry:
-            session.pop("signup_otp", None)
-            session.pop("signup_data", None)
-            flash("OTP expired. Please sign up again.", "error")
-            return redirect(url_for("login"))
-
-        if user_otp == actual_otp:
-            # OTP matched, register the user
-            data = session.pop("signup_data")
-            session.pop("signup_otp", None)
-            session.pop("signup_otp_expiry", None)
-
-            success, result = register_user(
-                data["name"], data["email"], data["phone"], None, data["password"]
-            )
-            if success:
-                session["user_id"] = result
-                session["user_name"] = data["name"]
-                flash(f"Welcome to Mohan's Vision, {data['name']}! 🎉 Your email is verified.", "success")
-                return redirect(url_for("dashboard"))
-            else:
-                flash(result, "error")
-                return redirect(url_for("login"))
-        else:
-            flash("Incorrect OTP. Please try again.", "error")
-
-    return render_template("verify_otp.html")
 
 
 # ── Page routes ──
