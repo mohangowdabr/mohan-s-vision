@@ -4,8 +4,62 @@ Super App for Unified Multi-Asset Investing and Awareness."""
 import json
 import random
 import time
+import smtplib
+import os
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash
 from datetime import datetime
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
+
+
+def send_otp_email(to_email: str, otp_code: str, user_name: str) -> bool:
+    """Send OTP to user's email via Gmail SMTP. Returns True on success."""
+    if not MAIL_USERNAME or not MAIL_PASSWORD or "your_" in MAIL_USERNAME:
+        # Fallback: print to terminal
+        print("\n" + "="*50)
+        print(f"📧 EMAIL SENT TO: {to_email}")
+        print(f"🔑 YOUR MOHAN'S VISION OTP IS: {otp_code}")
+        print("="*50 + "\n")
+        return True
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"{otp_code} is your Mohan's Vision verification code"
+        msg["From"] = f"Mohan's Vision <{MAIL_USERNAME}>"
+        msg["To"] = to_email
+
+        html_body = f"""
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;background:#0a0e27;color:#fff;border-radius:16px;padding:32px;">
+            <h2 style="color:#7c6af7;margin-bottom:8px;">Mohan's Vision 🔐</h2>
+            <p style="color:#aaa;">Hi {user_name}, here is your one-time verification code:</p>
+            <div style="background:#1a1f3a;border-radius:12px;padding:24px;text-align:center;margin:24px 0;">
+                <span style="font-size:40px;font-weight:700;letter-spacing:12px;color:#7c6af7;">{otp_code}</span>
+            </div>
+            <p style="color:#aaa;font-size:13px;">This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+            <p style="color:#555;font-size:12px;margin-top:24px;">If you didn't request this, please ignore this email.</p>
+        </div>
+        """
+        msg.attach(MIMEText(html_body, "html"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(MAIL_USERNAME, MAIL_PASSWORD)
+            server.sendmail(MAIL_USERNAME, to_email, msg.as_string())
+        return True
+    except Exception as e:
+        print(f"[Email Error] {e}")
+        # Fallback to terminal
+        print(f"🔑 OTP for {to_email}: {otp_code}")
+        return False
 
 from engine.health_score import compute_health_score, IDEAL_ALLOCATIONS
 from engine.fraud_check import check_entity, get_recent_scam_alerts, get_search_suggestions
@@ -82,11 +136,8 @@ def login():
             session["signup_otp"] = otp_code
             session["signup_otp_expiry"] = time.time() + 600  # 10 minutes expiry
 
-            # MOCK EMAIL SENDING: Print to console
-            print("\n" + "="*50)
-            print(f"📧 EMAIL SENT TO: {email}")
-            print(f"🔑 YOUR MOHAN'S VISION OTP IS: {otp_code}")
-            print("="*50 + "\n")
+            # Send OTP to user's email
+            send_otp_email(email, otp_code, name)
 
             return redirect(url_for("verify_otp"))
         else:
